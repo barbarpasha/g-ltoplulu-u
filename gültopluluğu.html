@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gül Topluluğu - Yönetim</title>
+    <style>
+        :root {
+            --ana-kirmizi: #e63946;
+            --arka-plan: #ffffff;
+            --yazi-rengi: #1d3557;
+            --kutu-rengi: #f1faee;
+            --kenarlik: #ddd;
+        }
+
+        body.dark-mode {
+            --arka-plan: #121212;
+            --yazi-rengi: #f8f9fa;
+            --kutu-rengi: #1e1e1e;
+            --kenarlik: #333;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; transition: 0.3s; }
+        body { font-family: 'Inter', sans-serif; background: var(--arka-plan); color: var(--yazi-rengi); }
+
+        header { 
+            background: var(--ana-kirmizi); color: white; padding: 15px 5%; 
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        header input { width: 30%; padding: 10px; border-radius: 10px; border: none; outline: none; background: rgba(255,255,255,0.2); color: white; }
+
+        .wrapper { display: flex; max-width: 1400px; margin: 0 auto; height: calc(100vh - 70px); }
+
+        .sidebar { width: 300px; border-right: 1px solid var(--kenarlik); padding: 20px; overflow-y: auto; }
+        .sidebar h3 { margin-bottom: 15px; font-size: 16px; color: var(--ana-kirmizi); }
+        .sidebar li { list-style: none; padding: 12px; border-radius: 8px; cursor: pointer; margin-bottom: 5px; font-size: 14px; }
+        .sidebar li:hover { background: var(--kutu-rengi); color: var(--ana-kirmizi); }
+
+        .content { flex: 1; padding: 40px; overflow-y: auto; }
+        .entry { background: var(--kutu-rengi); padding: 20px; border-radius: 15px; margin-bottom: 20px; border-left: 5px solid var(--ana-kirmizi); position: relative; }
+
+        .btn { padding: 8px 15px; border-radius: 8px; border: none; cursor: pointer; font-weight: bold; margin-left: 5px; }
+        .btn-main { background: white; color: var(--ana-kirmizi); }
+        .btn-admin { background: #ffd700; color: black; border: 1px solid #b8860b; }
+        .btn-submit { background: var(--ana-kirmizi); color: white; width: 100%; padding: 15px; margin-top: 10px; border-radius: 10px; }
+
+        /* Modal */
+        .modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); backdrop-filter: blur(5px); }
+        .modal-content { background: var(--kutu-rengi); margin: 5% auto; padding: 30px; width: 400px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .modal-content input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid var(--kenarlik); background: var(--arka-plan); color: var(--yazi-rengi); }
+
+        .admin-panel { display: none; margin-top: 30px; border: 2px solid #ffd700; padding: 20px; border-radius: 15px; background: rgba(255, 215, 0, 0.05); }
+        .ban-btn { background: #ff4d4d; color: white; padding: 5px 10px; font-size: 11px; border: none; border-radius: 4px; cursor: pointer; float: right; }
+    </style>
+</head>
+<body class="dark-mode">
+
+<header>
+    <div style="font-size: 22px; font-weight: 900; letter-spacing: -1px;">🌹 GÜL TOPLULUĞU</div>
+    <input type="text" placeholder="Gündemde ara...">
+    <div id="authArea">
+        <button class="btn btn-main" onclick="showModal('login')">Giriş Yap</button>
+        <button class="btn btn-main" onclick="showModal('register')">Kayıt Ol</button>
+    </div>
+</header>
+
+<div class="wrapper">
+    <div class="sidebar">
+        <h3># gündem</h3>
+        <ul id="topics">
+            <li onclick="loadTopic('gül topluluğu kuralları')">gül topluluğu kuralları</li>
+            <li onclick="loadTopic('yeni başlayanlar için tavsiyeler')">yeni başlayanlar için tavsiyeler</li>
+            <li onclick="loadTopic('en sevilen güller')">en sevilen güller</li>
+        </ul>
+        <div id="adminLinkArea"></div>
+    </div>
+
+    <div class="content">
+        <h1 id="topicTitle">gül topluluğu kuralları</h1>
+        <div id="entryArea">
+            <div class="entry">1. Saygılı olun. <br>2. Topluluk huzurunu bozmayın.<span style="display:block; margin-top:10px; color:var(--ana-kirmizi); font-size:12px; font-weight:bold;">@sistem</span></div>
+        </div>
+        
+        <div id="interactionArea">
+            <textarea id="entryInp" placeholder="Bu başlık hakkında ne düşünüyorsun?" style="width:100%; height:100px; padding:15px; border-radius:12px; background:var(--kutu-rengi); color:var(--yazi-rengi); border:1px solid var(--kenarlik); resize:none;"></textarea>
+            <button class="btn btn-submit" onclick="addEntry()">Gönder</button>
+        </div>
+
+        <div id="adminPanel" class="admin-panel">
+            <h2 style="color:#ffd700; margin-bottom:15px;">🛡️ Yönetici Kontrol Paneli</h2>
+            <div style="background: rgba(255,255,255,0.1); padding: 15px; border-radius: 10px;">
+                <h4 style="margin-bottom:10px;">Üye Yönetimi</h4>
+                <ul id="userList" style="list-style:none;">
+                    <li style="padding: 10px 0; border-bottom: 1px solid var(--kenarlik);">ahmet_bey12 <button class="ban-btn" onclick="banUser(this)">BANLA</button></li>
+                    <li style="padding: 10px 0; border-bottom: 1px solid var(--kenarlik);">rose_lover <button class="ban-btn" onclick="banUser(this)">BANLA</button></li>
+                </ul>
+            </div>
+            
+            <div style="margin-top:20px;">
+                <h4>Yeni Moderatör Yetkilendir</h4>
+                <input type="text" id="newAdminName" placeholder="Kullanıcı adı" style="width:100%; padding:10px; margin-top:10px; border-radius:5px; border:1px solid #ffd700; background:none; color:inherit;">
+                <button class="btn btn-admin" style="width:100%; margin-top:10px; padding:12px;" onclick="alert('Kullanıcıya moderatör yetkisi verildi!')">Yetkiyi Onayla</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="authModal" class="modal">
+    <div class="modal-content">
+        <h2 id="modalTitle" style="text-align:center; margin-bottom:20px; color:var(--ana-kirmizi);">Giriş Yap</h2>
+        <input type="text" id="modalUser" placeholder="Kullanıcı Adı">
+        <input type="password" id="modalPass" placeholder="Şifre">
+        <div id="modalMsg" style="color:#ff4d4d; font-size:12px; display:none; margin-bottom:10px; text-align:center;">Hatalı bilgi veya eksik kriter!</div>
+        <button class="btn btn-submit" id="modalBtn" onclick="handleAuth()">Devam Et</button>
+        <button class="btn" style="width:100%; background:none; color:gray; margin-top:5px;" onclick="closeModal()">İptal</button>
+    </div>
+</div>
+
+<script>
+    let currentMode = 'login';
+    let currentUser = null;
+
+    function showModal(mode) {
+        currentMode = mode;
+        document.getElementById('authModal').style.display = 'block';
+        document.getElementById('modalTitle').innerText = mode === 'login' ? 'Giriş Yap' : 'Kayıt Ol';
+        document.getElementById('modalMsg').style.display = 'none';
+    }
+
+    function closeModal() {
+        document.getElementById('authModal').style.display = 'none';
+    }
+
+    function handleAuth() {
+        const u = document.getElementById('modalUser').value;
+        const p = document.getElementById('modalPass').value;
+        const msg = document.getElementById('modalMsg');
+
+        if (currentMode === 'login') {
+            // SADECE SENİN BİLDİĞİN YÖNETİCİ GİRİŞİ
+            if (u === 'barbarpasha' && p === 'Mustafa201099') {
+                currentUser = u;
+                loginSuccess(true);
+            } else if (u !== "" && p.length >= 6) {
+                currentUser = u;
+                loginSuccess(false);
+            } else {
+                msg.style.display = 'block';
+                msg.innerText = "Kullanıcı adı veya şifre hatalı!";
+            }
+        } else {
+            // Kayıt Kuralları
+            const hasUpper = /[A-Z]/.test(p);
+            const hasNum = /[0-9]/.test(p);
+            if (p.length >= 6 && p.length <= 15 && hasUpper && hasNum) {
+                alert("Gül Topluluğu'na kaydınız oluşturuldu! Giriş yapabilirsiniz.");
+                showModal('login');
+            } else {
+                msg.style.display = 'block';
+                msg.innerText = "Şifre 6-15 karakter, 1 büyük harf ve 1 sayı içermeli!";
+            }
+        }
+    }
+
+    function loginSuccess(isAdmin) {
+        closeModal();
+        document.getElementById('authArea').innerHTML = `<span style="font-weight:bold;">🌹 ${currentUser}</span>`;
+        
+        if (isAdmin) {
+            document.getElementById('adminLinkArea').innerHTML = `
+                <button class="btn btn-admin" style="width:100%; margin-top:20px; padding:15px;" onclick="toggleAdminPanel()">🛡️ YÖNETİCİ PANELİ</button>
+            `;
+            alert("Sisteme tam yetkiyle giriş yapıldı, Hoş geldin barbarpasha.");
+        }
+    }
+
+    function toggleAdminPanel() {
+        const pnl = document.getElementById('adminPanel');
+        pnl.style.display = pnl.style.display === 'block' ? 'none' : 'block';
+        pnl.scrollIntoView({behavior: "smooth"});
+    }
+
+    function banUser(btn) {
+        if(confirm("Bu üyeyi topluluktan uzaklaştırmak istediğinize emin misiniz?")) {
+            btn.parentElement.style.textDecoration = "line-through";
+            btn.parentElement.style.opacity = "0.5";
+            btn.innerText = "BANLANDI";
+            btn.disabled = true;
+        }
+    }
+
+    function addEntry() {
+        const txt = document.getElementById('entryInp').value;
+        if(!currentUser) {
+            alert("Fikirlerini paylaşmak için önce giriş yapmalısın!");
+            showModal('login');
+            return;
+        }
+        if(txt.trim() === "") return;
+        
+        const entryHtml = `
+            <div class="entry">
+                ${txt}
+                <span style="display:block; margin-top:10px; color:var(--ana-kirmizi); font-size:12px; font-weight:bold;">@${currentUser}</span>
+            </div>`;
+        document.getElementById('entryArea').innerHTML += entryHtml;
+        document.getElementById('entryInp').value = "";
+    }
+
+    function loadTopic(title) {
+        document.getElementById('topicTitle').innerText = title;
+        document.getElementById('entryArea').innerHTML = `
+            <div class="entry">
+                "${title}" başlığı açıldı. İlk entry'yi sen gir!
+                <span style="display:block; margin-top:10px; color:var(--ana-kirmizi); font-size:12px; font-weight:bold;">@sistem</span>
+            </div>`;
+    }
+</script>
+
+</body>
+</html>
